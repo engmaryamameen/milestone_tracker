@@ -1,0 +1,40 @@
+name: Prettier Check
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - feature/**
+
+jobs:
+  prettier:
+    name: Check Code Formatting
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        project: [milestone-tracker, milestone-tracker-api]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: ./${{ matrix.project }}
+        run: npm install
+
+      - name: Prettier Check
+        working-directory: ./${{ matrix.project }}
+        run: |
+          if npm run | grep -q "format:check"; then
+            npm run format:check
+          else
+            echo "⚠️ No 'format:check' script found for ${{ matrix.project }}"
+            exit 1
+          fi

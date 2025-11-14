@@ -1,0 +1,41 @@
+name: Build Applications
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - feature/**
+      - bug/**
+
+jobs:
+  build:
+    name: Build Frontend & Backend
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        project: [milestone-tracker, milestone-tracker-api]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: ./${{ matrix.project }}
+        run: npm install
+
+      - name: Build project
+        working-directory: ./${{ matrix.project }}
+        run: |
+          if npm run | grep -q "build"; then
+            npm run build
+          else
+            echo "⚠️ No build script found for ${{ matrix.project }}"
+            exit 1
+          fi
